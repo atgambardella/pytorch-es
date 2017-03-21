@@ -99,7 +99,7 @@ def gradient_update(args, synced_model, returns, random_seeds, neg_list,
             if r > unperturbed_results:
                 nth_place += 1
         rank_diag = ('%d out of %d (1 means gradient '
-                     'is uninformative.)' % (nth_place,
+                     'is uninformative)' % (nth_place,
                                              len(returns) + 1))
         return rank_diag, nth_place
 
