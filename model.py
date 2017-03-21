@@ -1,4 +1,4 @@
-# Taken from https://github.com/ikostrikov/pytorch-a4c
+# Taken from https://github.com/ikostrikov/pytorch-a3c
 from __future__ import absolute_import, division, print_function
 
 import numpy as np
