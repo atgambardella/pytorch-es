@@ -4,7 +4,7 @@ This is a PyTorch implementation of [Evolution Strategies](https://arxiv.org/abs
 
 # Requirements
 
-Python 3.5, PyTorch >= 1.1.10, numpy, gym, universe, cv2
+Python 3.5, PyTorch >= 0.1.10, numpy, gym, universe, cv2
 
 # What is this? (For non-ML people)
 
