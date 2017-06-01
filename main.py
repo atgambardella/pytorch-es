@@ -20,8 +20,6 @@ parser.add_argument('--sigma', type=float, default=0.05, metavar='SD',
                     help='noise standard deviation')
 parser.add_argument('--useAdam', action='store_true',
                     help='bool to determine if to use adam optimizer')
-parser.add_argument('--wd', type=float, default=0.996, metavar='WD',
-                    help='amount of weight decay')
 parser.add_argument('--n', type=int, default=40, metavar='N',
                     help='batch size, must be even')
 parser.add_argument('--max-episode-length', type=int, default=100000,

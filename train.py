@@ -197,12 +197,10 @@ def gradient_update(args, synced_model, returns, random_seeds, neg_list,
 		    eps = np.random.normal(0, 1, v.size())
 		    v += torch.from_numpy(args.lr/(args.n*args.sigma) *
 		                          (reward*multiplier*eps)).float()
-	    for k, v in synced_model.es_params():
-		v *= args.wd
 	    args.lr *= args.lr_decay
 
-    #torch.save(synced_model.state_dict(),
-    #           os.path.join(chkpt_dir, 'latest.pth'))
+    torch.save(synced_model.state_dict(),
+               os.path.join(chkpt_dir, 'latest.pth'))
     return synced_model
 
 
