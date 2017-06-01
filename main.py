@@ -18,6 +18,8 @@ parser.add_argument('--lr-decay', type=float, default=1, metavar='LRD',
                     help='learning rate decay')
 parser.add_argument('--sigma', type=float, default=0.05, metavar='SD',
                     help='noise standard deviation')
+parser.add_argument('--useAdam', action='store_true',
+                    help='bool to determine if to use adam optimizer')
 parser.add_argument('--wd', type=float, default=0.996, metavar='WD',
                     help='amount of weight decay')
 parser.add_argument('--n', type=int, default=40, metavar='N',
@@ -36,6 +38,7 @@ parser.add_argument('--silent', action='store_true',
                     help='Silence print statements during training')
 parser.add_argument('--test', action='store_true',
                     help='Just render the env, no training')
+
 
 
 if __name__ == '__main__':

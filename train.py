@@ -5,12 +5,16 @@ import math
 import numpy as np
 
 import torch
+import torch.legacy.optim as legacyOptim
+
 import torch.nn.functional as F
 import torch.multiprocessing as mp
 from torch.autograd import Variable
 
 from envs import create_atari_env
 from model import ES
+
+import matplotlib.pyplot as plt
 
 
 def do_rollouts(args, models, random_seeds, return_queue, env, are_negative):
@@ -73,6 +77,11 @@ def perturb_model(args, model, random_seed, env):
         anti_v += torch.from_numpy(args.sigma*-eps).float()
     return [new_model, anti_model]
 
+optimConfig = []
+averageReward = []
+maxReward = []
+minReward = []
+episodeCounter = []
 
 def gradient_update(args, synced_model, returns, random_seeds, neg_list,
                     num_eps, num_frames, chkpt_dir, unperturbed_results):
@@ -84,12 +93,12 @@ def gradient_update(args, synced_model, returns, random_seeds, neg_list,
         sorted_returns_backwards = sorted(returns)[::-1]
         lamb = len(returns)
         shaped_returns = []
-        denom = sum([max(0, math.log2(lamb/2 + 1) -
-                         math.log2(sorted_returns_backwards.index(r) + 1))
+        denom = sum([max(0, math.log(lamb/2 + 1, 2) -
+                         math.log(sorted_returns_backwards.index(r) + 1), 2)
                      for r in returns])
         for r in returns:
-            num = max(0, math.log2(lamb/2 + 1) -
-                      math.log2(sorted_returns_backwards.index(r) + 1))
+            num = max(0, math.log(lamb/2 + 1, 2) -
+                      math.log(sorted_returns_backwards.index(r) + 1), 2)
             shaped_returns.append(num/denom + 1/lamb)
         return shaped_returns
 
@@ -120,26 +129,80 @@ def gradient_update(args, synced_model, returns, random_seeds, neg_list,
               'Learning rate: %f\n'
               'Total num frames seen: %d\n'
               'Unperturbed reward: %f\n'
-              'Unperturbed rank: %s\n\n' %
+              'Unperturbed rank: %s\n' 
+              'Using Adam: %r\n\n' %
               (num_eps, np.mean(returns), np.var(returns), max(returns),
                min(returns), batch_size,
                args.max_episode_length, args.sigma, args.lr, num_frames,
-               unperturbed_results, rank_diag))
+               unperturbed_results, rank_diag, args.useAdam))
+
+	averageReward.append(np.mean(returns))
+	episodeCounter.append(num_eps)
+	maxReward.append(max(returns))
+	minReward.append(min(returns))
+
+	pltAvg, = plt.plot(episodeCounter, averageReward, label='average')
+	pltMax, = plt.plot(episodeCounter, maxReward,  label='max')
+	pltMin, = plt.plot(episodeCounter, minReward,  label='min')
+
+        plt.ylabel('rewards')
+        plt.xlabel('episode num')
+	plt.legend(handles=[pltAvg, pltMax,pltMin])
+
+	fig1 = plt.gcf()
+
+	plt.draw()
+	fig1.savefig('graph.png', dpi=100)
+
     # For each model, generate the same random numbers as we did
     # before, and update parameters. We apply weight decay once.
-    for i in range(args.n):
-        np.random.seed(random_seeds[i])
-        multiplier = -1 if neg_list[i] else 1
-        reward = shaped_returns[i]
-        for k, v in synced_model.es_params():
-            eps = np.random.normal(0, 1, v.size())
-            v += torch.from_numpy(args.lr/(args.n*args.sigma) *
-                                  (reward*multiplier*eps)).float()
-    for k, v in synced_model.es_params():
-        v *= args.wd
-    args.lr *= args.lr_decay
-    torch.save(synced_model.state_dict(),
-               os.path.join(chkpt_dir, 'latest.pth'))
+    if args.useAdam:
+	    globalGrads = None
+	    for i in range(args.n):
+		np.random.seed(random_seeds[i])
+		multiplier = -1 if neg_list[i] else 1
+		reward = shaped_returns[i]
+
+		localGrads = []
+		idx = 0
+		for k, v in synced_model.es_params():
+		    eps = np.random.normal(0, 1, v.size())
+		    grad = torch.from_numpy((args.n*args.sigma) * (reward*multiplier*eps)).float()
+
+		    localGrads.append(grad)
+		    
+		    if len(optimConfig) == idx:
+			optimConfig.append({ 'learningRate' : args.lr  })
+		    idx = idx + 1
+
+		if globalGrads == None:
+			globalGrads = localGrads
+		else:
+			for i in range(len(globalGrads)):
+				globalGrads[i] = torch.add(globalGrads[i], localGrads[i])
+
+	    idx = 0
+	    for k, v in synced_model.es_params():
+		r, _ = legacyOptim.adam( lambda x:  (1, -globalGrads[idx]), v , optimConfig[idx])
+		v.copy_(r)
+		idx = idx + 1
+    else:
+	    # For each model, generate the same random numbers as we did
+	    # before, and update parameters. We apply weight decay once.
+	    for i in range(args.n):
+		np.random.seed(random_seeds[i])
+		multiplier = -1 if neg_list[i] else 1
+		reward = shaped_returns[i]
+		for k, v in synced_model.es_params():
+		    eps = np.random.normal(0, 1, v.size())
+		    v += torch.from_numpy(args.lr/(args.n*args.sigma) *
+		                          (reward*multiplier*eps)).float()
+	    for k, v in synced_model.es_params():
+		v *= args.wd
+	    args.lr *= args.lr_decay
+
+    #torch.save(synced_model.state_dict(),
+    #           os.path.join(chkpt_dir, 'latest.pth'))
     return synced_model
 
 
