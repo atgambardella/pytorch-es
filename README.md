@@ -29,7 +29,7 @@ python3 main.py --small-net --env-name CartPole-v1 --test --restore path_to_chec
 which will render the environment and the performance of the agent saved in the checkpoint. Checkpoints are saved once per gradient update in training, always overwriting the old file.
 
 ```
-python3 main.py --env-name PongDeterministic-v3
+python3 main.py --env-name PongDeterministic-v4
 ```
 which will train on Pong.
 

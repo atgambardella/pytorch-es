@@ -10,7 +10,7 @@ from model import ES
 from train import train_loop, render_env
 
 parser = argparse.ArgumentParser(description='ES')
-parser.add_argument('--env-name', default='PongDeterministic-v3',
+parser.add_argument('--env-name', default='PongDeterministic-v4',
                     metavar='ENV', help='environment')
 parser.add_argument('--lr', type=float, default=0.3, metavar='LR',
                     help='learning rate')
