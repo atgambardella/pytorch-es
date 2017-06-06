@@ -94,11 +94,11 @@ def gradient_update(args, synced_model, returns, random_seeds, neg_list,
         lamb = len(returns)
         shaped_returns = []
         denom = sum([max(0, math.log(lamb/2 + 1, 2) -
-                         math.log(sorted_returns_backwards.index(r) + 1), 2)
+                         math.log(sorted_returns_backwards.index(r) + 1, 2))
                      for r in returns])
         for r in returns:
             num = max(0, math.log(lamb/2 + 1, 2) -
-                      math.log(sorted_returns_backwards.index(r) + 1), 2)
+                      math.log(sorted_returns_backwards.index(r) + 1, 2))
             shaped_returns.append(num/denom + 1/lamb)
         return shaped_returns
 
