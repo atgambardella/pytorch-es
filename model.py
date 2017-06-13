@@ -34,6 +34,10 @@ def weights_init(m):
         m.weight.data.uniform_(-w_bound, w_bound)
         m.bias.data.fill_(0)
 
+def selu(x):
+    alpha = 1.6732632423543772848170429916717
+    scale = 1.0507009873554804934193349852946
+    return scale * F.elu(x, alpha)
 
 class ES(torch.nn.Module):
 
@@ -57,17 +61,19 @@ class ES(torch.nn.Module):
             self.actor_linear = nn.Linear(256, num_outputs)
         self.train()
 
+
+
     def forward(self, inputs):
         if self.small_net:
-            x = F.elu(self.linear1(inputs))
-            x = F.elu(self.linear2(x))
+            x = selu(self.linear1(inputs))
+            x = selu(self.linear2(x))
             return self.actor_linear(x)
         else:
             inputs, (hx, cx) = inputs
-            x = F.elu(self.conv1(inputs))
-            x = F.elu(self.conv2(x))
-            x = F.elu(self.conv3(x))
-            x = F.elu(self.conv4(x))
+            x = selu(self.conv1(inputs))
+            x = selu(self.conv2(x))
+            x = selu(self.conv3(x))
+            x = selu(self.conv4(x))
             x = x.view(-1, 32*3*3)
             hx, cx = self.lstm(x, (hx, cx))
             x = hx
