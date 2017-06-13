@@ -37,7 +37,7 @@ I will upload results on Atari as soon as possible (at the moment I only have ac
 
 # Deviations from the paper
 
-* I have not yet tried virtual batch normalization, but I did not seem to need it, at least for Pong. This may be because my network is probably different than OpenAI's, or possibly because Pong is relatively easy. I will try implementing and comparing in the future.
+* I have not yet tried virtual batch normalization, but instead use the selu nonlinearity, which serves the same purpose but at a significantly reduced computational overhead. ES appears to be training on Pong quite well even with relatively small batch sizes and selu.
 
 * I did not pass rewards between workers, but rather sent them all to one master worker which took a gradient step and sent the new models back to the workers. If you have more cores than your batch size, OpenAI's method is probably more efficient, but if your batch size is larger than the number of cores, I think my method would be better.
 
@@ -51,7 +51,7 @@ I will upload results on Atari as soon as possible (at the moment I only have ac
 
 * During training you probably want to look at the rank of the unperturbed model within the population of perturbed models. Ideally some perturbation is performing better than your unperturbed model (if this doesn't happen, you probably won't learn anything useful). This requires 1 extra rollout per gradient step, but as this rollout can be computed in parallel with the training rollouts, this does not add to training time. It does, however, give us access to one less CPU core.
 
-* Sigma is a tricky hyperparameter to get right -- higher values of sigma will correspond to less variance in the gradient estimate, but will be more biased. At the same time, sigma is controlling the variance of our perturbations, so if we need a more varied population, it should be increased. It might be possible to adaptively change sigma based on the rank of the unperturbed model mentioned in the tip above. I tried a few simple heuristics based on this and found no significant performance increase, but it might be possible to do this more intelligently.
+* Sigma is a tricky hyperparameter to get right -- higher values of sigma will correspond to less variance in the gradient estimate, but will be more biased. At the same time, sigma is controlling the variance of our perturbations, so if we need a more varied population, it should be increased. It might be possible to adaptively change sigma based on the rank of the unperturbed model mentioned in the tip above. I tried a few simple heuristics based on this and found no significant performance increase, but it [might be possible to do this more intelligently](http://www.inference.vc/evolution-strategies-variational-optimisation-and-natural-es-2/).
 
 * I found, as OpenAI did in their paper, that performance on Atari increased as I increased the size of the neural net.
 
