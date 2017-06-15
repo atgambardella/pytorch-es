@@ -29,11 +29,13 @@ python3 main.py --small-net --env-name CartPole-v1 --test --restore path_to_chec
 which will render the environment and the performance of the agent saved in the checkpoint. Checkpoints are saved once per gradient update in training, always overwriting the old file.
 
 ```
-python3 main.py --env-name PongDeterministic-v4
+python3 main.py --env-name PongDeterministic-v4 --n 10 --lr 0.01 --useAdam
 ```
-which will train on Pong.
+which will train on Pong and produce a learning curve similar to this one:
 
-I will upload results on Atari as soon as possible (at the moment I only have access to a 12-core computer, so turnaround times for Atari experiments are very long).
+![Learning curve](assets/graph.png)
+
+This graph was produced after approximately 24 hours of training on a 12-core computer. I would expect that a more thorough hyperparameter search, and more importantly a larger batch size, would allow the network to solve the environment.
 
 # Deviations from the paper
 
