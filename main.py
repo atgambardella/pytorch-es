@@ -12,7 +12,7 @@ from train import train_loop, render_env
 parser = argparse.ArgumentParser(description='ES')
 parser.add_argument('--env-name', default='PongDeterministic-v4',
                     metavar='ENV', help='environment')
-parser.add_argument('--lr', type=float, default=0.3, metavar='LR',
+parser.add_argument('--lr', type=float, default=0.1, metavar='LR',
                     help='learning rate')
 parser.add_argument('--lr-decay', type=float, default=1, metavar='LRD',
                     help='learning rate decay')
